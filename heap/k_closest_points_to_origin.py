@@ -32,6 +32,29 @@ My Takeaways:
 - Tuples in heaps are ordered by the first element.
 - Distance squared is enough.
 - Heaps are useful for nearest-neighbor style problems.
+
+
+Optimized Version: 
+Keep heap size only k
+Time: O(n log k)
+Space: O(k)
+
+Approach:
+Use a max heap of size k.
+Python only has a min heap, so store negative distance.
+If heap size exceeds k, pop the farthest point.
+
+Time: O(n log k)
+Space: O(k)
+
+Key Insight:
+To find k closest, keep only k candidates.
+Remove the farthest whenever heap grows too large.
+
+Distance:
+x*x + y*y
+
+No sqrt needed.
 """
 
 import heapq
@@ -53,6 +76,36 @@ def k_closest(points, k):
 
     return result
 
+def k_closest_optimal(points, k):
+    heap = []
+
+    for x,y in points:
+        distance = -(x*x + y*y)
+
+        heapq.heappush(heap, (distance, [x, y]))
+
+        if len(heap) > k:
+            heapq.heappop(heap)
+
+    result = []
+
+    for distance, point in heap:
+        result.append(point)
+
+    return result
+
+def is_valid_k_closest(points, k, result):
+    if len(result) != k:
+        return False
+
+    distances = sorted([x*x + y*y for x, y in points])
+    cutoff = distances[k - 1]
+
+    for x, y in result:
+        if x*x + y*y > cutoff:
+            return False
+
+    return True
 
 def run_tests():
     test_cases = [
@@ -72,25 +125,21 @@ def run_tests():
 ]
     passed = 0
 
-    for i, (nums, k, expected) in enumerate(test_cases, start=1):
+    for i, (points, k, expected) in enumerate(test_cases, start=1):
 
-        result = k_closest(nums,k)
+        result = k_closest_optimal(points,k)
 
-        if result == expected:
-            print(
-                f"✅ Test {i} Passed | "
-                f"Input={nums}"
-            )
+        #if sorted(result) == sorted(expected):
+        if is_valid_k_closest(points, k, result):
+            print(f"✅ Test {i} Passed | Input={points}")
             passed += 1
-
         else:
             print(
                 f"❌ Test {i} Failed | "
-                f"Input={nums} | "
-                f"Expected={expected} Got={result}"
+                f"Input={points} | Expected={expected} Got={result}"
             )
 
-    print(f"\nPassed {passed}/{len(test_cases)} tests")
+            print(f"\nPassed {passed}/{len(test_cases)} tests")
 
 
 if __name__ == "__main__":
